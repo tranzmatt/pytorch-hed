@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import getopt
 import numpy
@@ -18,12 +18,6 @@ torch.backends.cudnn.enabled = True # make sure to use cudnn for computational p
 arguments_strModel = 'bsds500' # only 'bsds500' for now
 arguments_strIn = './images/sample.png'
 arguments_strOut = './out.png'
-
-for strOption, strArgument in getopt.getopt(sys.argv[1:], '', [ strParameter[2:] + '=' for strParameter in sys.argv[1::2] ])[0]:
-    if strOption == '--model' and strArgument != '': arguments_strModel = strArgument # which model to use
-    if strOption == '--in' and strArgument != '': arguments_strIn = strArgument # path to the input image
-    if strOption == '--out' and strArgument != '': arguments_strOut = strArgument # path to where the output should be stored
-# end
 
 ##########################################################
 
@@ -138,10 +132,21 @@ def estimate(tenInput):
 
 ##########################################################
 
-if __name__ == '__main__':
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    for strOption, strArgument in getopt.getopt(argv, '', [ strParameter[2:] + '=' for strParameter in argv[1::2] ])[0]:
+        if strOption == '--model' and strArgument != '': arguments_strModel = strArgument
+        if strOption == '--in' and strArgument != '': arguments_strIn = strArgument
+        if strOption == '--out' and strArgument != '': arguments_strOut = strArgument
+
     tenInput = torch.FloatTensor(numpy.ascontiguousarray(numpy.array(PIL.Image.open(arguments_strIn))[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32) * (1.0 / 255.0)))
 
     tenOutput = estimate(tenInput)
 
     PIL.Image.fromarray((tenOutput.clip(0.0, 1.0).numpy().transpose(1, 2, 0)[:, :, 0] * 255.0).astype(numpy.uint8)).save(arguments_strOut)
+
+if __name__ == '__main__':
+    main()
 # end
